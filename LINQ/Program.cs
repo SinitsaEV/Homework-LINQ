@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,25 +12,47 @@ namespace LINQ
             Console.OutputEncoding = Encoding.Unicode;
             Console.InputEncoding = Encoding.Unicode;
 
-            PlayersFabric playersFabric = new PlayersFabric();
+            LeaderboardFabric leaderboardFabric = new LeaderboardFabric();
+            Leaderboard leaderboard = leaderboardFabric.CreateLeaderboard();
 
-            List<Player> players = playersFabric.CreatePlayers();
-            int topPlacesCount = 3;
+            leaderboard.ShowTopPlayersByLevel();
+            leaderboard.ShowTopPlayersByPower();            
+        }
+    }
 
-            var bestPlayersByLevel = players.OrderByDescending(player => player.Level).Take(topPlacesCount).ToList();
-           
-            foreach( Player player in bestPlayersByLevel)
+    class Leaderboard
+    {
+        private List<Player> _players;
+
+        public Leaderboard(List<Player> players, int topPlacesCount)
+        {
+            _players = players;
+            TopPlacesCount = topPlacesCount;
+        }
+
+        public int TopPlacesCount { get; private set; }
+
+        public void ShowTopPlayersByPower()
+        {
+            List<Player> bestPlayersByPower = _players.OrderByDescending(player => player.Power).Take(TopPlacesCount).ToList();
+            Console.WriteLine("Топ 3 по силе:");
+            ShowPlayers(bestPlayersByPower);
+        }
+
+        public void ShowTopPlayersByLevel()
+        {
+            List<Player> bestPlayersByLevel = _players.OrderByDescending(player => player.Level).Take(TopPlacesCount).ToList();
+            Console.WriteLine("Топ 3 по уровню:");
+            ShowPlayers(bestPlayersByLevel);
+        }
+
+        private void ShowPlayers(List<Player> players)
+        {
+            foreach(Player player in players)
             {
                 player.Show();
             }
-
-            var bestPlayersByPower = players.OrderByDescending(player => player.Power).Take(topPlacesCount).ToList();
-
-            foreach (Player player in bestPlayersByPower)
-            {
-                player.Show();
-            }
-        }       
+        }
     }
 
     class Player
@@ -54,7 +76,7 @@ namespace LINQ
         }
     }
 
-    class PlayersFabric
+    class LeaderboardFabric
     {
         private List<string> _names = new List<string>
         {
@@ -65,7 +87,15 @@ namespace LINQ
             "Половнев Павел Анатольевич",
             "Жилан Александр Викторович"
         };
-        public List<Player> CreatePlayers()
+
+        private int _topPlacesCount = 3;
+
+        public Leaderboard CreateLeaderboard()
+        {
+            return new Leaderboard(CreatePlayers(),_topPlacesCount);
+        }
+
+        private List<Player> CreatePlayers()
         {
             List<Player> list = new List<Player>();
 
@@ -80,11 +110,11 @@ namespace LINQ
             int maxPower = 100000;
             int minPower = 0;
 
-            for(int i = 0; i < maxPlayerCount; i++)
+            for (int i = 0; i < randomPlayerCount; i++)
             {
                 int randomLevel = UserUtils.GenerateRandomNumber(minLevel, maxLevel);
                 int randomPower = UserUtils.GenerateRandomNumber(minPower, maxPower);
-                int randomNameIndex = UserUtils.GenerateRandomNumber(0,_names.Count);
+                int randomNameIndex = UserUtils.GenerateRandomNumber(0, _names.Count);
 
                 list.Add(new Player(_names[randomNameIndex], randomLevel, randomPower));
             }
