@@ -12,84 +12,102 @@ namespace LINQ
             Console.OutputEncoding = Encoding.Unicode;
             Console.InputEncoding = Encoding.Unicode;
 
-            PlayersFabric playersFabric = new PlayersFabric();
+            ShopFabric shopFabric = new ShopFabric();
+            Shop shop = shopFabric.CreateShop();
 
-            List<Player> players = playersFabric.CreatePlayers();
-            int topPlacesCount = 3;
-
-            var bestPlayersByLevel = players.OrderByDescending(player => player.Level).Take(topPlacesCount).ToList();
-           
-            foreach( Player player in bestPlayersByLevel)
-            {
-                player.Show();
-            }
-
-            var bestPlayersByPower = players.OrderByDescending(player => player.Power).Take(topPlacesCount).ToList();
-
-            foreach (Player player in bestPlayersByPower)
-            {
-                player.Show();
-            }
-        }       
+            shop.FindSpoiledProducts();
+        }
     }
 
-    class Player
+    class Shop
     {
-        public Player(string name, int level, int power)
+        private List<Product> _products;
+
+        public Shop(List<Product> products, int currentYear)
+        {
+            _products = products;
+            CurrentYear = currentYear;
+        }
+
+        public int CurrentYear {  get; private set; }
+
+        public void FindSpoiledProducts()
+        {
+            List<Product> spoiledProducts = _products.Where(product => CurrentYear - product.ManufactureYear > product.ExpirationDate).ToList();
+            ShowProducts(spoiledProducts);
+        }
+
+        private void ShowProducts(List<Product> products)
+        {
+            foreach(Product product in products)
+            {
+                product.Show();
+            }
+        }
+    }
+
+    class Product
+    {
+        public Product(string name, int manufactureYear, int expirationDate)
         {
             Name = name;
-            Level = level;
-            Power = power;
+            ManufactureYear = manufactureYear;
+            ExpirationDate = expirationDate;
         }
 
         public string Name { get; private set; }
-        public int Level { get; private set; }
-        public int Power { get; private set; }
+        public int ManufactureYear { get; private set; }
+        public int ExpirationDate { get; private set; }
 
         public void Show()
         {
-            Console.WriteLine($"Name: {Name}");
-            Console.WriteLine($"Level: {Level}");
-            Console.WriteLine($"Power: {Power}");
+            Console.WriteLine($"Имя: {Name}");
+            Console.WriteLine($"Год производства: {ManufactureYear}");
+            Console.WriteLine($"Срок годности: {ExpirationDate}");
         }
     }
 
-    class PlayersFabric
+    class ShopFabric
     {
         private List<string> _names = new List<string>
         {
-            "Синица Евгений Владимирович",
-            "Бурван Илья Викторович",
-            "Наркевич Владимир Николаевич",
-            "Кореневский Ян Александрович",
-            "Половнев Павел Анатольевич",
-            "Жилан Александр Викторович"
+            "Фасоль",
+            "Огурцы",
+            "Помидоры"
         };
-        public List<Player> CreatePlayers()
+
+        public int CurrentYear = 2025;
+
+        public Shop CreateShop()
         {
-            List<Player> list = new List<Player>();
+            return new Shop(CreateProducts(),CurrentYear);
+        }
 
-            int maxPlayerCount = 30;
-            int minPlayerCount = 10;
+        private List<Product> CreateProducts()
+        {
+            List<Product> products = new List<Product>();
 
-            int randomPlayerCount = UserUtils.GenerateRandomNumber(minPlayerCount, maxPlayerCount);
+            int maxProductsCount = 15;
+            int minProductsCount = 10;
 
-            int maxLevel = 100;
-            int minLevel = 0;
+            int maxManufactureYear = 2025;
+            int minManufactureYear = 2000;
 
-            int maxPower = 100000;
-            int minPower = 0;
+            int maxExpirationDate = 5;
+            int minExpirationDate = 1;
 
-            for(int i = 0; i < maxPlayerCount; i++)
+            int randomProductsCount = UserUtils.GenerateRandomNumber(minProductsCount, maxProductsCount);
+
+            for (int i = 0; i < randomProductsCount; i++)
             {
-                int randomLevel = UserUtils.GenerateRandomNumber(minLevel, maxLevel);
-                int randomPower = UserUtils.GenerateRandomNumber(minPower, maxPower);
-                int randomNameIndex = UserUtils.GenerateRandomNumber(0,_names.Count);
+                int randomNameIndex = UserUtils.GenerateRandomNumber(0, _names.Count);
+                int randomManufactureYear = UserUtils.GenerateRandomNumber(minManufactureYear, maxManufactureYear);
+                int randomExpirationDate = UserUtils.GenerateRandomNumber(minExpirationDate, maxExpirationDate);
 
-                list.Add(new Player(_names[randomNameIndex], randomLevel, randomPower));
+                products.Add(new Product(_names[randomNameIndex], randomManufactureYear, randomExpirationDate));
             }
 
-            return list;
+            return products;
         }
     }
 
