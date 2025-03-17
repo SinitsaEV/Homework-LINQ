@@ -12,54 +12,81 @@ namespace LINQ
             Console.OutputEncoding = Encoding.Unicode;
             Console.InputEncoding = Encoding.Unicode;
 
-            CriminalsFabric criminalsFabric = new CriminalsFabric();
-            Detective detective = new Detective("Шерлок", criminalsFabric.CreateCriminals());
+            HospitalFabric hospitalFabric = new HospitalFabric();
+            Hospital hospital = hospitalFabric.CreateHospital();
 
-            detective.Work();
+            hospital.Work();
         }       
     }
 
-    abstract class Person
+    class Patient
     {
-
-        public Person(string name)
+        public Patient(string name, int age, string disease)
         {
+            Name = name;
+            Age = age;
+            Disease = disease;
+        }
+
+        public string Name { get; private set; }
+        public int Age { get; private set; }
+        public string Disease { get; private set; }
+
+        public void Show()
+        {
+            Console.WriteLine($"Фио: {Name}");
+            Console.WriteLine($"Возраст: {Age}");
+            Console.WriteLine($"Заболевание: {Disease}");
+        }
+    }
+
+    class Hospital
+    {
+        private List<Patient> _patients;
+
+        public Hospital(List<Patient> patients, string name)
+        {
+            _patients = patients;
             Name = name;
         }
 
-        public string Name { get; private set; }       
-    }
-
-    class Detective : Person
-    {
-        private List<Criminal> _criminals;
-        public Detective(string name, List<Criminal> criminals) : base(name)
-        {
-            _criminals = criminals;
-        }
+        public string Name { get; private set; }
 
         public void Work()
         {
-            const string AmnestyCriminalCommand = "1";
-            const string ExitCommand = "2";
+            const string OrderByNameCommand = "1";
+            const string OrderByAgeCommand = "2";
+            const string FilterByDiseaseCommand = "3";
+            const string ExitCommand = "4";
 
             bool isActive = true;
 
             while (isActive)
             {
-                Console.WriteLine($"{AmnestyCriminalCommand} - амнистия\n{ExitCommand} - выйти");
+                Console.WriteLine($"{OrderByNameCommand} - сортировать по имени\n" +
+                    $"{OrderByAgeCommand} - сортировать по возрасту\n" +
+                    $"{FilterByDiseaseCommand} - отфильтровать по болезни\n" +
+                    $"{ExitCommand} - выйти");
                 Console.Write("Введите команду: ");
                 string userInput = Console.ReadLine();
 
                 switch (userInput)
                 {
-                    case AmnestyCriminalCommand:
-                        AmnestyCriminal();
+                    case OrderByNameCommand:
+                        OrderByName();
+                        break;
+
+                    case OrderByAgeCommand:
+                        OrderByAge();
+                        break;
+
+                    case FilterByDiseaseCommand:
+                        FilterByDisease();
                         break;
 
                     case ExitCommand:
-                        Console.WriteLine("Вы вышли");
                         isActive = false;
+                        Console.WriteLine("Вы вышли.");
                         break;
 
                     default:
@@ -69,68 +96,36 @@ namespace LINQ
             }
         }
 
-        private void AmnestyCriminal()
+        private void OrderByName()
         {
-            Console.Write("Введите преступление: ");
-            string crime = Console.ReadLine();
-
-            List<Criminal> criminals = _criminals.Where(criminal => criminal.Crime.ToLower() == crime.ToLower() && criminal.IsInPrison == true).ToList();
-
-            ShowCriminals(criminals);
-            ReleaseCriminals(criminals);
-
-            if (criminals.Count == 0)
-            {
-                Console.WriteLine("Преступники не найдены.");
-            }
-            else
-            {
-                ShowCriminals(criminals);
-            }
+            List<Patient> orderedPatients = _patients.OrderBy(patient => patient.Name).ToList();
+            ShowPatients(orderedPatients);
         }
 
-        private void ReleaseCriminals(List<Criminal> criminals)
+        private void OrderByAge()
         {
-            foreach(Criminal criminal in criminals)
-            {
-                criminal.GetOutOfJail();
-            }
+            List<Patient> orderedPatients = _patients.OrderBy(patient => patient.Age).ToList();
+            ShowPatients(orderedPatients);
         }
 
-        private void ShowCriminals(List<Criminal> criminals)
+        private void FilterByDisease()
         {
-            foreach (Criminal criminal in criminals)
+            Console.Write("Введите болезнь: ");
+            string disease = Console.ReadLine();
+            List<Patient> filteredPatients = _patients.Where(patient => patient.Disease.ToLower() == disease.ToLower()).ToList();
+            ShowPatients(filteredPatients);
+        }
+
+        private void ShowPatients(List<Patient> patients)
+        {
+            foreach (Patient patient in patients)
             {
-                criminal.Show();
+                patient.Show();
             }
         }
     }
 
-    class Criminal : Person
-    {
-        public Criminal(string name, string crime, bool isInPrison) : base(name)
-        {
-            Crime = crime;
-            IsInPrison = isInPrison;
-        }
-
-        public bool IsInPrison { get; private set; }
-        public string Crime {  get; private set; }
-
-        public void Show()
-        {
-            Console.WriteLine($"Фио: {Name}");
-            Console.WriteLine($"Преступление: {Crime}");
-            Console.WriteLine($"Находиться в под стражей: {IsInPrison}\n");
-        }
-
-        public void GetOutOfJail()
-        {
-            IsInPrison = false;
-        }
-    }
-
-    class CriminalsFabric
+    class HospitalFabric
     {
         private List<string> _names = new List<string>
         {
@@ -142,32 +137,40 @@ namespace LINQ
             "Жилан Александр Викторович"
         };
 
-        private List<string> _crimes = new List<string>
+        private List<string> _diseases = new List<string>
         {
-            "Убийство",
-            "Антиправительственное",
-            "Кража"
+            "Перелом",
+            "ОРВИ",
+            "Мигрень"
         };
 
-        public List<Criminal> CreateCriminals()
+        public Hospital CreateHospital()
         {
-            List<Criminal> criminals = new List<Criminal>();
-            int maxCriminalsCount = 20;
-            int minCriminalsCount = 10;
+            return new Hospital(CreatePatients(), "14-областная");
+        }
 
-            int randomCriminalsCount = UserUtils.GenerateRandomNumber(minCriminalsCount, maxCriminalsCount);
-            bool[] isInPrison = new bool[] { true, false };
+        private List<Patient> CreatePatients()
+        {
+            List<Patient> patients = new List<Patient>();
 
-            for(int i = 0; i < randomCriminalsCount; i++)
+            int maxPatientsCount = 20;
+            int minPatientsCount = 10;
+
+            int maxAge = 70;
+            int minAge = 10;
+
+            int randomPatientsCount = UserUtils.GenerateRandomNumber(minPatientsCount, maxPatientsCount);
+
+            for (int i = 0; i < randomPatientsCount; i++)
             {
-                int randomNameIndex = UserUtils.GenerateRandomNumber(0, _names.Count);
-                int randomIsInPrisonIndex = UserUtils.GenerateRandomNumber(0, isInPrison.Length);
-                int randomCrimeIndex = UserUtils.GenerateRandomNumber(0,_crimes.Count);
+                int randomAge = UserUtils.GenerateRandomNumber(minAge, maxAge);
+                int randoNameIndex = UserUtils.GenerateRandomNumber(0, _names.Count);
+                int randoDiseaseIndex = UserUtils.GenerateRandomNumber(0, _diseases.Count);
 
-                criminals.Add(new Criminal(_names[randomNameIndex], _crimes[randomCrimeIndex], isInPrison[randomIsInPrisonIndex]));
+                patients.Add(new Patient(_names[randoNameIndex], randomAge, _diseases[randoDiseaseIndex]));
             }
 
-            return criminals;
+            return patients;
         }
     }
 
