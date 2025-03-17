@@ -40,21 +40,21 @@ namespace LINQ
 
         public void Work()
         {
-            const string FindCriminalCommand = "1";
+            const string AmnestyCriminalCommand = "1";
             const string ExitCommand = "2";
 
             bool isActive = true;
 
             while (isActive)
             {
-                Console.WriteLine($"{FindCriminalCommand} - найти преступника\n{ExitCommand} - выйти");
+                Console.WriteLine($"{AmnestyCriminalCommand} - амнистия\n{ExitCommand} - выйти");
                 Console.Write("Введите команду: ");
                 string userInput = Console.ReadLine();
 
                 switch (userInput)
                 {
-                    case FindCriminalCommand:
-                        FindCriminal();
+                    case AmnestyCriminalCommand:
+                        AmnestyCriminal();
                         break;
 
                     case ExitCommand:
@@ -69,15 +69,15 @@ namespace LINQ
             }
         }
 
-        private void FindCriminal()
+        private void AmnestyCriminal()
         {
-            int height = ReadInt("Введите рост: ");
-            int weight = ReadInt("Введите вес: ");
-            Console.Write("Введите национальность: ");
-            string nationality = Console.ReadLine();
+            Console.Write("Введите преступление: ");
+            string crime = Console.ReadLine();
 
-            List<Criminal> criminals = _criminals.Where( criminal => criminal.Height == height && criminal.Weight == weight
-            && criminal.Nationality.ToLower() == nationality.ToLower() && criminal.IsInPrison == false).ToList();
+            List<Criminal> criminals = _criminals.Where(criminal => criminal.Crime.ToLower() == crime.ToLower() && criminal.IsInPrison == true).ToList();
+
+            ShowCriminals(criminals);
+            ReleaseCriminals(criminals);
 
             if (criminals.Count == 0)
             {
@@ -89,17 +89,12 @@ namespace LINQ
             }
         }
 
-        private int ReadInt(string message)
+        private void ReleaseCriminals(List<Criminal> criminals)
         {
-            Console.Write(message);
-            int input = 0;
-
-            while (int.TryParse(Console.ReadLine(), out input) == false || input < 0)
+            foreach(Criminal criminal in criminals)
             {
-                Console.WriteLine("Неверный ввод.");
+                criminal.GetOutOfJail();
             }
-
-            return input;
         }
 
         private void ShowCriminals(List<Criminal> criminals)
@@ -113,26 +108,25 @@ namespace LINQ
 
     class Criminal : Person
     {
-        public Criminal(string name, int height, int weight, string nationality, bool isInPrison) : base(name)
+        public Criminal(string name, string crime, bool isInPrison) : base(name)
         {
-            Height = height;
-            Weight = weight;
-            Nationality = nationality;
+            Crime = crime;
             IsInPrison = isInPrison;
         }
 
         public bool IsInPrison { get; private set; }
-        public int Height { get; private set; }
-        public int Weight { get; private set; }
-        public string Nationality { get; private set; }
+        public string Crime {  get; private set; }
 
         public void Show()
         {
             Console.WriteLine($"Фио: {Name}");
-            Console.WriteLine($"Рост: {Height}");
-            Console.WriteLine($"Вес: {Weight}");
-            Console.WriteLine($"Национальность: {Nationality}");
+            Console.WriteLine($"Преступление: {Crime}");
             Console.WriteLine($"Находиться в под стражей: {IsInPrison}\n");
+        }
+
+        public void GetOutOfJail()
+        {
+            IsInPrison = false;
         }
     }
 
@@ -148,14 +142,11 @@ namespace LINQ
             "Жилан Александр Викторович"
         };
 
-        private List<string> _nationalitys = new List<string>
+        private List<string> _crimes = new List<string>
         {
-            "Белорус",
-            "Русский",
-            "Поляк",
-            "Американец",
-            "Латыш",
-            "Испанец"
+            "Убийство",
+            "Антиправительственное",
+            "Кража"
         };
 
         public List<Criminal> CreateCriminals()
@@ -164,23 +155,16 @@ namespace LINQ
             int maxCriminalsCount = 20;
             int minCriminalsCount = 10;
 
-            int maxHeight = 220;
-            int minHeight = 150;
-            int maxWeight = 150;
-            int minWeight = 50;
-
             int randomCriminalsCount = UserUtils.GenerateRandomNumber(minCriminalsCount, maxCriminalsCount);
             bool[] isInPrison = new bool[] { true, false };
 
             for(int i = 0; i < randomCriminalsCount; i++)
             {
                 int randomNameIndex = UserUtils.GenerateRandomNumber(0, _names.Count);
-                int randomHeight = UserUtils.GenerateRandomNumber(minHeight,maxHeight);
-                int randomWeight = UserUtils.GenerateRandomNumber(minWeight, maxWeight);
-                int randomNationalityIndex = UserUtils.GenerateRandomNumber(0, _nationalitys.Count);
                 int randomIsInPrisonIndex = UserUtils.GenerateRandomNumber(0, isInPrison.Length);
+                int randomCrimeIndex = UserUtils.GenerateRandomNumber(0,_crimes.Count);
 
-                criminals.Add(new Criminal(_names[randomNameIndex], randomHeight, randomWeight, _nationalitys[randomNationalityIndex], isInPrison[randomIsInPrisonIndex]));
+                criminals.Add(new Criminal(_names[randomNameIndex], _crimes[randomCrimeIndex], isInPrison[randomIsInPrisonIndex]));
             }
 
             return criminals;
