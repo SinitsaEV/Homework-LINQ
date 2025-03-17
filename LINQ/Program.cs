@@ -15,27 +15,28 @@ namespace LINQ
             BattalionFabric battalionFabric = new BattalionFabric();
             Battalion battalion = battalionFabric.CreateBattalion();
 
-            battalion.ShowSoldiers();
+            battalion.TransferSoldiers();
         }
     }
 
     class Battalion
     {
-        private List<Soldier> _soldiers;
+        private List<Soldier> _firstSoldiersList;
+        private List<Soldier> _secondSoldiersList;
 
-        public Battalion(List<Soldier> soldiers)
+        public Battalion(List<Soldier> firstSoldiersList, List<Soldier> secondSoldiersList)
         {
-            _soldiers = soldiers;
+            _firstSoldiersList = firstSoldiersList;
+            _secondSoldiersList = secondSoldiersList;
+            NameInitial = "Б";
         }
 
-        public void ShowSoldiers()
-        {
-            var soldiers = _soldiers.Select(soldier => new { soldier.Name, soldier.Rank }).ToList();
+        public string NameInitial { get; private set; }
 
-            foreach (var soldier in soldiers)
-            {
-                Console.WriteLine($"{soldier.Name} {soldier.Rank}\n");
-            }
+        public void TransferSoldiers()
+        {
+            _firstSoldiersList = _firstSoldiersList.Union(_secondSoldiersList.Where(soldier => soldier.Name.StartsWith(NameInitial))).ToList();
+            _secondSoldiersList = _secondSoldiersList.Where(soldier => !soldier.Name.StartsWith(NameInitial)).ToList();
         }
     }
 
@@ -53,6 +54,12 @@ namespace LINQ
         public string Weapon {  get; private set; }
         public string Rank {  get; private set; }
         public int ArmyServiceMonths {  get; private set; }
+
+        public void Show()
+        {
+            Console.WriteLine($"Фио {Name}");
+            Console.WriteLine($"Ранг {Rank}");
+        }
     }
 
     class BattalionFabric
@@ -102,7 +109,7 @@ namespace LINQ
 
         public Battalion CreateBattalion()
         {
-            return new Battalion(CreateSoldiers());
+            return new Battalion(CreateSoldiers(),CreateSoldiers());
         }
 
         private List<Soldier> CreateSoldiers()
