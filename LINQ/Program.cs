@@ -12,99 +12,120 @@ namespace LINQ
             Console.OutputEncoding = Encoding.Unicode;
             Console.InputEncoding = Encoding.Unicode;
 
-            ShopFabric shopFabric = new ShopFabric();
-            Shop shop = shopFabric.CreateShop();
+            BattalionFabric battalionFabric = new BattalionFabric();
+            Battalion battalion = battalionFabric.CreateBattalion();
 
-            shop.FindSpoiledProducts();
+            battalion.ShowSoldiers();
         }
     }
 
-    class Shop
+    class Battalion
     {
-        private List<Product> _products;
+        private List<Soldier> _soldiers;
 
-        public Shop(List<Product> products, int currentYear)
+        public Battalion(List<Soldier> soldiers)
         {
-            _products = products;
-            CurrentYear = currentYear;
+            _soldiers = soldiers;
         }
 
-        public int CurrentYear {  get; private set; }
-
-        public void FindSpoiledProducts()
+        public void ShowSoldiers()
         {
-            List<Product> spoiledProducts = _products.Where(product => CurrentYear - product.ManufactureYear > product.ExpirationDate).ToList();
-            ShowProducts(spoiledProducts);
-        }
+            var soldiers = _soldiers.Select(soldier => new { soldier.Name, soldier.Rank }).ToList();
 
-        private void ShowProducts(List<Product> products)
-        {
-            foreach(Product product in products)
+            foreach (var soldier in soldiers)
             {
-                product.Show();
+                Console.WriteLine($"{soldier.Name} {soldier.Rank}\n");
             }
         }
     }
 
-    class Product
+    class Soldier
     {
-        public Product(string name, int manufactureYear, int expirationDate)
+        public Soldier(string name, string weapon, string rank, int armyServiceMonths)
         {
             Name = name;
-            ManufactureYear = manufactureYear;
-            ExpirationDate = expirationDate;
+            Weapon = weapon;
+            Rank = rank;
+            ArmyServiceMonths = armyServiceMonths;
         }
 
         public string Name { get; private set; }
-        public int ManufactureYear { get; private set; }
-        public int ExpirationDate { get; private set; }
-
-        public void Show()
-        {
-            Console.WriteLine($"Имя: {Name}");
-            Console.WriteLine($"Год производства: {ManufactureYear}");
-            Console.WriteLine($"Срок годности: {ExpirationDate}");
-        }
+        public string Weapon {  get; private set; }
+        public string Rank {  get; private set; }
+        public int ArmyServiceMonths {  get; private set; }
     }
 
-    class ShopFabric
+    class BattalionFabric
     {
         private List<string> _names = new List<string>
         {
-            "Фасоль",
-            "Огурцы",
-            "Помидоры"
+            "Синица Евгений Владимирович",
+            "Бурван Илья Викторович",
+            "Наркевич Владимир Николаевич",
+            "Кореневский Ян Александрович",
+            "Половнев Павел Анатольевич",
+            "Жилан Александр Викторович"
         };
 
-        public int CurrentYear = 2025;
-
-        public Shop CreateShop()
+        private List<string> _militaryRanks = new List<string>
         {
-            return new Shop(CreateProducts(),CurrentYear);
+            "Рядовой",
+            "Ефрейтор",
+            "Младший сержант",
+            "Сержант",
+            "Старший сержант",
+            "Старшина",
+            "Прапорщик",
+            "Старший прапорщик",
+            "Младший лейтенант",
+            "Лейтенант",
+            "Старший лейтенант",
+            "Капитан",
+            "Майор",
+            "Подполковник",
+            "Полковник"
+        };
+
+        private List<string> _weaponTypes = new List<string>
+        {
+            "АК-74",
+            "АК-12",
+            "Пистолет Макарова (ПМ)",
+            "Снайперская винтовка Драгунова (СВД)",
+            "Ручной пулемет Калашникова (РПК)",
+            "Гранатомет РПГ-7",
+            "Пистолет-пулемет ПП-2000",
+            "Автоматический гранатомет АГС-30",
+            "Карабин СКС",
+            "Пулемет ПКМ"
+        };
+
+        public Battalion CreateBattalion()
+        {
+            return new Battalion(CreateSoldiers());
         }
 
-        private List<Product> CreateProducts()
+        private List<Soldier> CreateSoldiers()
         {
-            List<Product> products = new List<Product>();
+            List<Soldier> products = new List<Soldier>();
 
-            int maxProductsCount = 15;
-            int minProductsCount = 10;
+            int maxSoldiersCount = 15;
+            int minSoldiersCount = 10;
 
-            int maxManufactureYear = 2025;
-            int minManufactureYear = 2000;
+            int maxArmyServiceMonths = 360;
+            int minArmyServiceMonths = 1;
 
-            int maxExpirationDate = 5;
-            int minExpirationDate = 1;
 
-            int randomProductsCount = UserUtils.GenerateRandomNumber(minProductsCount, maxProductsCount);
+            int randomSoldiersCount = UserUtils.GenerateRandomNumber(minSoldiersCount, maxSoldiersCount);
 
-            for (int i = 0; i < randomProductsCount; i++)
+            for (int i = 0; i < randomSoldiersCount; i++)
             {
-                int randomNameIndex = UserUtils.GenerateRandomNumber(0, _names.Count);
-                int randomManufactureYear = UserUtils.GenerateRandomNumber(minManufactureYear, maxManufactureYear);
-                int randomExpirationDate = UserUtils.GenerateRandomNumber(minExpirationDate, maxExpirationDate);
+                int randomArmyServiceMonths = UserUtils.GenerateRandomNumber(minArmyServiceMonths, maxArmyServiceMonths);
+                int randomNameIndex = UserUtils.GenerateRandomNumber(0,_names.Count);
+                int randomRankIndex = UserUtils.GenerateRandomNumber(0,_militaryRanks.Count);
+                int randomWeaponTypesIndex = UserUtils.GenerateRandomNumber(0, _weaponTypes.Count);
 
-                products.Add(new Product(_names[randomNameIndex], randomManufactureYear, randomExpirationDate));
+                products.Add(new Soldier(_names[randomNameIndex], _weaponTypes[randomWeaponTypesIndex], _militaryRanks[randomRankIndex], randomArmyServiceMonths));
             }
 
             return products;
