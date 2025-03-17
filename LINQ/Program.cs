@@ -12,120 +12,49 @@ namespace LINQ
             Console.OutputEncoding = Encoding.Unicode;
             Console.InputEncoding = Encoding.Unicode;
 
-            HospitalFabric hospitalFabric = new HospitalFabric();
-            Hospital hospital = hospitalFabric.CreateHospital();
+            PlayersFabric playersFabric = new PlayersFabric();
 
-            hospital.Work();
+            List<Player> players = playersFabric.CreatePlayers();
+            int topPlacesCount = 3;
+
+            var bestPlayersByLevel = players.OrderByDescending(player => player.Level).Take(topPlacesCount).ToList();
+           
+            foreach( Player player in bestPlayersByLevel)
+            {
+                player.Show();
+            }
+
+            var bestPlayersByPower = players.OrderByDescending(player => player.Power).Take(topPlacesCount).ToList();
+
+            foreach (Player player in bestPlayersByPower)
+            {
+                player.Show();
+            }
         }       
     }
 
-    class Patient
+    class Player
     {
-        public Patient(string name, int age, string disease)
+        public Player(string name, int level, int power)
         {
             Name = name;
-            Age = age;
-            Disease = disease;
+            Level = level;
+            Power = power;
         }
 
         public string Name { get; private set; }
-        public int Age { get; private set; }
-        public string Disease { get; private set; }
+        public int Level { get; private set; }
+        public int Power { get; private set; }
 
         public void Show()
         {
-            Console.WriteLine($"Фио: {Name}");
-            Console.WriteLine($"Возраст: {Age}");
-            Console.WriteLine($"Заболевание: {Disease}");
+            Console.WriteLine($"Name: {Name}");
+            Console.WriteLine($"Level: {Level}");
+            Console.WriteLine($"Power: {Power}");
         }
     }
 
-    class Hospital
-    {
-        private List<Patient> _patients;
-
-        public Hospital(List<Patient> patients, string name)
-        {
-            _patients = patients;
-            Name = name;
-        }
-
-        public string Name { get; private set; }
-
-        public void Work()
-        {
-            const string OrderByNameCommand = "1";
-            const string OrderByAgeCommand = "2";
-            const string FilterByDiseaseCommand = "3";
-            const string ExitCommand = "4";
-
-            bool isActive = true;
-
-            while (isActive)
-            {
-                Console.WriteLine($"{OrderByNameCommand} - сортировать по имени\n" +
-                    $"{OrderByAgeCommand} - сортировать по возрасту\n" +
-                    $"{FilterByDiseaseCommand} - отфильтровать по болезни\n" +
-                    $"{ExitCommand} - выйти");
-                Console.Write("Введите команду: ");
-                string userInput = Console.ReadLine();
-
-                switch (userInput)
-                {
-                    case OrderByNameCommand:
-                        OrderByName();
-                        break;
-
-                    case OrderByAgeCommand:
-                        OrderByAge();
-                        break;
-
-                    case FilterByDiseaseCommand:
-                        FilterByDisease();
-                        break;
-
-                    case ExitCommand:
-                        isActive = false;
-                        Console.WriteLine("Вы вышли.");
-                        break;
-
-                    default:
-                        Console.WriteLine("Неверный ввод.");
-                        break;
-                }
-            }
-        }
-
-        private void OrderByName()
-        {
-            List<Patient> orderedPatients = _patients.OrderBy(patient => patient.Name).ToList();
-            ShowPatients(orderedPatients);
-        }
-
-        private void OrderByAge()
-        {
-            List<Patient> orderedPatients = _patients.OrderBy(patient => patient.Age).ToList();
-            ShowPatients(orderedPatients);
-        }
-
-        private void FilterByDisease()
-        {
-            Console.Write("Введите болезнь: ");
-            string disease = Console.ReadLine();
-            List<Patient> filteredPatients = _patients.Where(patient => patient.Disease.ToLower() == disease.ToLower()).ToList();
-            ShowPatients(filteredPatients);
-        }
-
-        private void ShowPatients(List<Patient> patients)
-        {
-            foreach (Patient patient in patients)
-            {
-                patient.Show();
-            }
-        }
-    }
-
-    class HospitalFabric
+    class PlayersFabric
     {
         private List<string> _names = new List<string>
         {
@@ -136,41 +65,31 @@ namespace LINQ
             "Половнев Павел Анатольевич",
             "Жилан Александр Викторович"
         };
-
-        private List<string> _diseases = new List<string>
+        public List<Player> CreatePlayers()
         {
-            "Перелом",
-            "ОРВИ",
-            "Мигрень"
-        };
+            List<Player> list = new List<Player>();
 
-        public Hospital CreateHospital()
-        {
-            return new Hospital(CreatePatients(), "14-областная");
-        }
+            int maxPlayerCount = 30;
+            int minPlayerCount = 10;
 
-        private List<Patient> CreatePatients()
-        {
-            List<Patient> patients = new List<Patient>();
+            int randomPlayerCount = UserUtils.GenerateRandomNumber(minPlayerCount, maxPlayerCount);
 
-            int maxPatientsCount = 20;
-            int minPatientsCount = 10;
+            int maxLevel = 100;
+            int minLevel = 0;
 
-            int maxAge = 70;
-            int minAge = 10;
+            int maxPower = 100000;
+            int minPower = 0;
 
-            int randomPatientsCount = UserUtils.GenerateRandomNumber(minPatientsCount, maxPatientsCount);
-
-            for (int i = 0; i < randomPatientsCount; i++)
+            for(int i = 0; i < maxPlayerCount; i++)
             {
-                int randomAge = UserUtils.GenerateRandomNumber(minAge, maxAge);
-                int randoNameIndex = UserUtils.GenerateRandomNumber(0, _names.Count);
-                int randoDiseaseIndex = UserUtils.GenerateRandomNumber(0, _diseases.Count);
+                int randomLevel = UserUtils.GenerateRandomNumber(minLevel, maxLevel);
+                int randomPower = UserUtils.GenerateRandomNumber(minPower, maxPower);
+                int randomNameIndex = UserUtils.GenerateRandomNumber(0,_names.Count);
 
-                patients.Add(new Patient(_names[randoNameIndex], randomAge, _diseases[randoDiseaseIndex]));
+                list.Add(new Player(_names[randomNameIndex], randomLevel, randomPower));
             }
 
-            return patients;
+            return list;
         }
     }
 
