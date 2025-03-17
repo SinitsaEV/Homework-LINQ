@@ -35,14 +35,14 @@ namespace LINQ
         public void ShowTopPlayersByPower()
         {
             List<Player> bestPlayersByPower = _players.OrderByDescending(player => player.Power).Take(TopPlacesCount).ToList();
-            Console.WriteLine("Топ 3 по силе:");
+            Console.WriteLine($"Топ {TopPlacesCount} по силе:");
             ShowPlayers(bestPlayersByPower);
         }
 
         public void ShowTopPlayersByLevel()
         {
             List<Player> bestPlayersByLevel = _players.OrderByDescending(player => player.Level).Take(TopPlacesCount).ToList();
-            Console.WriteLine("Топ 3 по уровню:");
+            Console.WriteLine($"Топ {TopPlacesCount} по уровню:");
             ShowPlayers(bestPlayersByLevel);
         }
 
